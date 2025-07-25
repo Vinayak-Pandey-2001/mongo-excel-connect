@@ -40,10 +40,18 @@ app.get('/fields', async (req, res) => {
 
 app.post('/fetch', async (req, res) => {
   const { dbName, collection, fields } = req.body;
-  const col = client.db(dbName).collection(collection);
+  const db = client.db(dbName);
+  const col = db.collection(collection);
+
   const projection = Object.fromEntries(fields.map(f => [f, 1]));
-  const docs = await col.find({}, { projection }).limit(100).toArray();
-  res.json(docs);
+
+  try {
+    const docs = await col.find({}, { projection }).toArray();
+    res.json(docs);
+  } catch (err) {
+    console.error("Fetch error:", err);
+    res.status(500).json({ error: "Error fetching documents" });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
