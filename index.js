@@ -74,12 +74,20 @@ app.post('/fetch', async (req, res) => {
 
   const projection = {};
   fields.forEach(f => {
-    projection[f] = 1;
+    if (typeof f === 'string' && f.trim() !== '') {
+      projection[f] = 1;
+    }
   });
 
   try {
-    const docs = await col.find({}, { projection }).toArray();
-    res.json(docs);
+    try {
+      const docs = await col.find({}, { projection }).toArray();
+      res.json(docs);
+    } catch (err) {
+      console.error("❌ MongoDB fetch error:", err);
+      console.error("⚠️ Projection used:", projection);
+      res.status(500).json({ error: "Error fetching documents" });
+    }
   } catch (err) {
     console.error("Fetch error:", err);
     res.status(500).json({ error: "Error fetching documents" });
