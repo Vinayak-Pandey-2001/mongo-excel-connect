@@ -35,7 +35,7 @@ app.get('/fields', async (req, res) => {
   const { db, collection } = req.query;
   const col = client.db(db).collection(collection);
 
-  const sampleDocs = await col.find().limit(50).toArray(); // sample 50 docs
+  const sampleDocs = await col.find().sort({ createdAt: -1 }).limit(100).toArray();
   const fieldSet = new Set();
 
   sampleDocs.forEach(doc => {
@@ -54,7 +54,6 @@ function collectKeysRecursive(obj, prefix, fieldSet) {
 
     fieldSet.add(fullKey);
 
-    // Avoid recursing into ObjectId, Date, Buffer, etc.
     if (
       typeof value === 'object' &&
       value !== null &&
