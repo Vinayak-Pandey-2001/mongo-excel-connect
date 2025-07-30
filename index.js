@@ -72,12 +72,26 @@ app.post('/fetch', async (req, res) => {
   const db = client.db(dbName);
   const col = db.collection(collection);
 
-  const projection = {};
-  fields.forEach(f => {
-    if (typeof f === 'string' && f.trim() !== '') {
-      projection[f] = 1;
-    }
-  });
+  function sanitizeProjection(fields) {
+    const projection = {};
+    const dotFields = new Set();
+    
+    fields.forEach(field => {
+      if (!field) return;
+    
+      if (field.includes('.')) {
+        const parent = field.split('.')[0];
+        dotFields.add(parent);
+        projection[field] = 1;
+      } else if (!dotFields.has(field)) {
+        projection[field] = 1;
+      }
+    });
+  
+    return projection;
+  }
+  
+  const projection = sanitizeProjection(fields);
 
   try {
     try {
