@@ -35,7 +35,7 @@ app.get('/fields', async (req, res) => {
   const { db, collection } = req.query;
   const col = client.db(db).collection(collection);
 
-  const sampleDocs = await col.find().sort({ createdAt: -1 }).limit(100).toArray();
+  const sampleDocs = await col.find().sort({ createdAt: -1 }).limit(10000).toArray();
   const fieldSet = new Set();
 
   sampleDocs.forEach(doc => {
