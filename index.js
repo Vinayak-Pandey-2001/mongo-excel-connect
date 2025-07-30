@@ -76,32 +76,30 @@ app.post('/fetch', async (req, res) => {
     const projection = {};
     const topLevelFields = new Set();
     const nestedFields = new Set();
-  
+
     for (const field of fields) {
       if (!field) continue;
-    
+
       const parts = field.split(".");
       const topLevel = parts[0];
-    
-      // Check if this field collides with a previously added nested or parent field
+
       const isParentAlreadyAdded = topLevelFields.has(topLevel) && parts.length > 1;
       const isChildAlreadyAdded = nestedFields.has(topLevel) && parts.length === 1;
-    
+
       if (isParentAlreadyAdded || isChildAlreadyAdded) {
-        // Skip this field due to path collision
         continue;
       }
-    
+
       // Safe to add
       projection[field] = 1;
-    
+
       if (parts.length > 1) {
         nestedFields.add(topLevel);
       } else {
         topLevelFields.add(field);
       }
     }
-  
+
     return projection;
   }
 
