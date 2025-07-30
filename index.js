@@ -34,9 +34,29 @@ app.get('/collections', async (req, res) => {
 app.get('/fields', async (req, res) => {
   const { db, collection } = req.query;
   const col = client.db(db).collection(collection);
-  const doc = await col.findOne();
-  res.json(doc ? Object.keys(doc) : []);
+
+  const sampleDocs = await col.find().limit(50).toArray(); // sample 50 docs
+  const fieldSet = new Set();
+
+  sampleDocs.forEach(doc => {
+    collectKeysRecursive(doc, '', fieldSet);
+  });
+
+  res.json(Array.from(fieldSet));
 });
+
+function collectKeysRecursive(obj, prefix, fieldSet) {
+  for (const key in obj) {
+    const value = obj[key];
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+
+    fieldSet.add(fullKey);
+
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      collectKeysRecursive(value, fullKey, fieldSet);
+    }
+  }
+}
 
 app.post('/fetch', async (req, res) => {
   const { dbName, collection, fields } = req.body;
