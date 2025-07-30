@@ -47,12 +47,22 @@ app.get('/fields', async (req, res) => {
 
 function collectKeysRecursive(obj, prefix, fieldSet) {
   for (const key in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+
     const value = obj[key];
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
     fieldSet.add(fullKey);
 
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    // Avoid recursing into ObjectId, Date, Buffer, etc.
+    if (
+      typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value) &&
+      !(value instanceof Date) &&
+      !(value._bsontype === 'ObjectId') &&
+      !(Buffer.isBuffer(value))
+    ) {
       collectKeysRecursive(value, fullKey, fieldSet);
     }
   }
