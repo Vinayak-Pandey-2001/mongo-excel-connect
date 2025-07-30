@@ -74,23 +74,37 @@ app.post('/fetch', async (req, res) => {
 
   function sanitizeProjection(fields) {
     const projection = {};
-    const dotFields = new Set();
+    const topLevelFields = new Set();
+    const nestedFields = new Set();
+  
+    for (const field of fields) {
+      if (!field) continue;
     
-    fields.forEach(field => {
-      if (!field) return;
+      const parts = field.split(".");
+      const topLevel = parts[0];
     
-      if (field.includes('.')) {
-        const parent = field.split('.')[0];
-        dotFields.add(parent);
-        projection[field] = 1;
-      } else if (!dotFields.has(field)) {
-        projection[field] = 1;
+      // Check if this field collides with a previously added nested or parent field
+      const isParentAlreadyAdded = topLevelFields.has(topLevel) && parts.length > 1;
+      const isChildAlreadyAdded = nestedFields.has(topLevel) && parts.length === 1;
+    
+      if (isParentAlreadyAdded || isChildAlreadyAdded) {
+        // Skip this field due to path collision
+        continue;
       }
-    });
+    
+      // Safe to add
+      projection[field] = 1;
+    
+      if (parts.length > 1) {
+        nestedFields.add(topLevel);
+      } else {
+        topLevelFields.add(field);
+      }
+    }
   
     return projection;
   }
-  
+
   const projection = sanitizeProjection(fields);
 
   try {
