@@ -72,7 +72,10 @@ app.post('/fetch', async (req, res) => {
   const db = client.db(dbName);
   const col = db.collection(collection);
 
-  const projection = Object.fromEntries(fields.map(f => [f, 1]));
+  const projection = {};
+  fields.forEach(f => {
+    projection[f] = 1;
+  });
 
   try {
     const docs = await col.find({}, { projection }).toArray();
