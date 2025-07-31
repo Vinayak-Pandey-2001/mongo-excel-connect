@@ -107,7 +107,7 @@ app.post('/fetch', async (req, res) => {
 
   try {
     try {
-      const docs = await col.find({}, { projection }).toArray();
+      const docs = await col.find({"jobId":{"$gte":"JR-2000"}}, { projection }).toArray();
       res.json(docs);
     } catch (err) {
       console.error("❌ MongoDB fetch error:", err);
