@@ -18,7 +18,15 @@ async function connectDB() {
   }
 }
 
-connectDB();
+connectDB().then(() => {
+  app.locals.client = client;
+  
+  const enrichedRoutes = require("./routes/enriched");
+  app.use(enrichedRoutes); // Registers your /api/longlist/enriched route
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+});
 
 app.get('/databases', async (req, res) => {
   const dbs = await client.db().admin().listDatabases();
