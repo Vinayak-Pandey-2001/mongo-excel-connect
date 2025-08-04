@@ -108,8 +108,8 @@ router.get("/api/longlist/enriched", async (req, res) => {
     const finalDocs = enrichedDocs.map(doc => {
       const companyName = doc.derivedPAN ? panToCompanyMap[doc.derivedPAN] || null : null;
 
-      let f3_published_details = null;
-      let f2_published_details = null;
+      let f3_published_details = "";
+      let f2_published_details = "";
 
       if (
         doc.f2_published_for_Client &&
