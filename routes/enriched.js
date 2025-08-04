@@ -125,7 +125,13 @@ router.get("/api/longlist/enriched", async (req, res) => {
           timeZone: "Asia/Kolkata"
         };
         const formattedDate = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
-        f3_published_details = `${companyName || "Unknown"} - ${doc.lowestQuoteValue || "NA"} - ${formattedDate}`;
+    
+        const formattedQuoteValue =
+          typeof doc.lowestQuoteValue === "number"
+            ? `INR ${doc.lowestQuoteValue.toLocaleString("en-IN")}`
+            : "INR NA";
+    
+        f3_published_details = `${companyName || "Unknown"} - ${formattedQuoteValue} - ${formattedDate}`;
       }
   
       return {
