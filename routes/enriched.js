@@ -109,6 +109,27 @@ router.get("/api/longlist/enriched", async (req, res) => {
       const companyName = doc.derivedPAN ? panToCompanyMap[doc.derivedPAN] || null : null;
 
       let f3_published_details = null;
+      let f2_published_details = null;
+
+      if (
+        doc.f2_published_for_Client &&
+        doc.f2_published_for_Client.published === true &&
+        doc.f2_published_for_Client.timestamp
+      ) {
+        const dateObj = new Date(doc.f2_published_for_Client.timestamp);
+        const options = {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: "Asia/Kolkata"
+        };
+        const formattedDate = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
+
+        f2_published_details = `${companyName || "Unknown"}  -  ${formattedDate}`;
+      }
       if (
         doc.f3_published_for_Client &&
         doc.f3_published_for_Client.published === true &&
@@ -128,12 +149,13 @@ router.get("/api/longlist/enriched", async (req, res) => {
 
         const formattedQuoteValue = doc.lowestQuoteValue ? `INR ${doc.lowestQuoteValue}`: "Not yet Quoted";
 
-        f3_published_details = `${companyName || "Unknown"} - ${formattedQuoteValue} - ${formattedDate}`;
+        f3_published_details = `${companyName || "Unknown"}  -  ${formattedQuoteValue}  -  ${formattedDate}`;
       }
 
       return {
         ...doc,
         companyName,
+        f2_published_details,
         f3_published_details
       };
     });
