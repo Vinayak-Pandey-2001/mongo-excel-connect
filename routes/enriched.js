@@ -43,7 +43,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
       .collection("vendorleadslonglistforjob")
       .find(vendorQuery)
       .skip(skip)
-      .limit(limit)
+    //   .limit(limit)
       .project(vendorFieldsProjection)
       .toArray();
 
