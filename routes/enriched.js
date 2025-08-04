@@ -105,10 +105,35 @@ router.get("/api/longlist/enriched", async (req, res) => {
     });
 
     // 6️⃣ Attach companyName to enriched docs
-    const finalDocs = enrichedDocs.map(doc => ({
-      ...doc,
-      companyName: doc.derivedPAN ? panToCompanyMap[doc.derivedPAN] || null : null,
-    }));
+    const finalDocs = enrichedDocs.map(doc => {
+      const companyName = doc.derivedPAN ? panToCompanyMap[doc.derivedPAN] || null : null;
+    
+      let f3_published_details = null;
+      if (
+        doc.f3_published_for_Client &&
+        doc.f3_published_for_Client.published === true &&
+        doc.f3_published_for_Client.timestamp
+      ) {
+        const dateObj = new Date(doc.f3_published_for_Client.timestamp);
+        const options = {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: "Asia/Kolkata"
+        };
+        const formattedDate = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
+        f3_published_details = `${companyName || "Unknown"} - ${doc.lowestQuoteValue || "NA"} - ${formattedDate}`;
+      }
+  
+      return {
+        ...doc,
+        companyName,
+        f3_published_details
+      };
+    });
 
     res.json(finalDocs);
 
