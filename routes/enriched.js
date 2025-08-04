@@ -107,7 +107,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
     // 6️⃣ Attach companyName to enriched docs
     const finalDocs = enrichedDocs.map(doc => {
       const companyName = doc.derivedPAN ? panToCompanyMap[doc.derivedPAN] || null : null;
-    
+
       let f3_published_details = null;
       if (
         doc.f3_published_for_Client &&
@@ -125,15 +125,12 @@ router.get("/api/longlist/enriched", async (req, res) => {
           timeZone: "Asia/Kolkata"
         };
         const formattedDate = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
-    
-        const formattedQuoteValue =
-          typeof doc.lowestQuoteValue === "number"
-            ? `INR ${doc.lowestQuoteValue.toLocaleString("en-IN")}`
-            : "INR NA";
-    
+
+        const formattedQuoteValue = doc.lowestQuoteValue ? `INR ${doc.lowestQuoteValue}`: "Not yet Quoted";
+
         f3_published_details = `${companyName || "Unknown"} - ${formattedQuoteValue} - ${formattedDate}`;
       }
-  
+
       return {
         ...doc,
         companyName,
