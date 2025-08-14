@@ -107,9 +107,10 @@ app.get('/collections', async (req, res) => {
 
 app.get('/fields', async (req, res) => {
   const { db, collection } = req.query;
+  console.log("Incoming request params:", { db, collection });
   const col = client.db(db).collection(collection);
-
   const sampleDocs = await col.aggregate([{ $sample: { size: 1000 } }]).toArray();
+  console.log("Hi :", sampleDocs);
   
   const topLevelKeys = new Set();
   const allFields = new Set();
