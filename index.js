@@ -37,17 +37,37 @@ connectDB();
 // -------------------- helpers --------------------
 
 // Detect a sensible type label for a value
-function detectType(value) {
-  if (value instanceof Date) return 'date';
-  if (Array.isArray(value)) return 'array';
-  if (value && typeof value === 'object') return 'object';
-  if (typeof value === 'number') return 'number';
-  if (typeof value === 'boolean') return 'boolean';
-  if (typeof value === 'string') {
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) return 'date';
+function detectType(v) {
+  if (v === null) return 'null';
+  if (v === undefined) return 'undefined';
+  if (typeof v === 'bigint') return 'bigint';
+  if (typeof v === 'symbol') return 'symbol';
+  if (typeof v === 'function') return 'function';
+
+  const tag = Object.prototype.toString.call(v); // reliable across realms
+  if (tag === '[object Date]') return 'date';
+  if (tag === '[object Array]') return 'array';
+  if (tag === '[object RegExp]') return 'regexp';
+  if (tag === '[object Map]') return 'map';
+  if (tag === '[object Set]') return 'set';
+  if (tag === '[object Int8Array]' || tag.endsWith('Array]')) return 'typed-array';
+
+  if (typeof v === 'number') {
+    if (Number.isNaN(v)) return 'NaN';
+    if (!Number.isFinite(v)) return 'infinity';
+    return 'number';
+  }
+
+  if (typeof v === 'string') {
+    // Strict ISO-8601-ish check before parsing to avoid environment-dependent parsing
+    const isoLike = /^\d{4}-\d{2}-\d{2}(T.*Z?)?$/;
+    if (isoLike.test(v) && !Number.isNaN(Date.parse(v))) return 'date';
     return 'string';
   }
+
+  if (typeof v === 'boolean') return 'boolean';
+  if (typeof v === 'object') return 'object';
+
   return 'unknown';
 }
 
@@ -204,7 +224,7 @@ app.get('/fields', async (req, res) => {
     const col = client.db(db).collection(collection);
 
     // sample documents (use $sample to avoid relying on createdAt)
-    const SAMPLE_SIZE = 1000; // tune if needed
+    const SAMPLE_SIZE = 10000; // tune if needed
     const sampleDocs = await col.aggregate([{ $sample: { size: SAMPLE_SIZE } }]).toArray();
     console.log(`/fields - sampleDocs count: ${sampleDocs.length}`);
 
