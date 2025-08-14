@@ -110,37 +110,40 @@ app.get('/fields', async (req, res) => {
   console.log("Incoming request params:", { db, collection });
   const col = client.db(db).collection(collection);
   const sampleDocs = await col.aggregate([{ $sample: { size: 1000 } }]).toArray();
-  console.log("Hi :", sampleDocs);
+  console.log("Hi :", sampleDocs[0]);
   
   const topLevelKeys = new Set();
   const allFields = new Set();
-
-  const deepKeyCollector = (obj, prefix) => {
-    for (const key in obj) {
-      if (key.startsWith('_') && key !== '_id') continue;
-      const value = obj[key];
-      const fullKey = prefix ? `${prefix}.${key}` : key;
-      allFields.add(fullKey);
-      if (typeof value === 'object' && value !== null && !Buffer.isBuffer(value)) {
-        deepKeyCollector(value, fullKey);
+  try{
+    const deepKeyCollector = (obj, prefix) => {
+      for (const key in obj) {
+        if (key.startsWith('_') && key !== '_id') continue;
+        const value = obj[key];
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+        allFields.add(fullKey);
+        if (typeof value === 'object' && value !== null && !Buffer.isBuffer(value)) {
+          deepKeyCollector(value, fullKey);
+        }
       }
-    }
-  };
-
-  sampleDocs.forEach(doc => {
-    Object.keys(doc).forEach(k => {
-      if (!k.startsWith('_') || k === '_id') {
-        topLevelKeys.add(k);
-      }
+    };
+  
+    sampleDocs.forEach(doc => {
+      Object.keys(doc).forEach(k => {
+        if (!k.startsWith('_') || k === '_id') {
+          topLevelKeys.add(k);
+        }
+      });
+      deepKeyCollector(doc, '');
     });
-    deepKeyCollector(doc, '');
-  });
-
-  const filteredFields = Array.from(allFields).filter(f => !f.toLowerCase().includes('buffer'));
-  res.json({
-    topLevelKeys: Array.from(topLevelKeys),
-    otherFields: filteredFields.filter(f => !topLevelKeys.has(f))
-  });
+  
+    const filteredFields = Array.from(allFields).filter(f => !f.toLowerCase().includes('buffer'));
+    res.json({
+      topLevelKeys: Array.from(topLevelKeys),
+      otherFields: filteredFields.filter(f => !topLevelKeys.has(f))
+    });
+  } catch (err) {
+    console.error("Error in /fields route:", err);
+  }
 });
 
 app.post('/fetch', async (req, res) => {
