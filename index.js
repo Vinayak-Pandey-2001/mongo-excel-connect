@@ -109,7 +109,7 @@ app.get('/fields', async (req, res) => {
   const { db, collection } = req.query;
   console.log("Incoming request params:", { db, collection });
   const col = client.db(db).collection(collection);
-  const sampleDocs = await col.aggregate([{ $sample: { size: 1000 } }]).toArray();
+  const sampleDocs = await col.aggregate([{ $sample: { size: 10000 } }]).toArray();
   console.log("Hi :", sampleDocs[0]);
   
   const topLevelKeys = new Set();
@@ -126,7 +126,7 @@ app.get('/fields', async (req, res) => {
         }
       }
     };
-  
+
     sampleDocs.forEach(doc => {
       Object.keys(doc).forEach(k => {
         if (!k.startsWith('_') || k === '_id') {
@@ -135,7 +135,7 @@ app.get('/fields', async (req, res) => {
       });
       deepKeyCollector(doc, '');
     });
-  
+
     const filteredFields = Array.from(allFields).filter(f => !f.toLowerCase().includes('buffer'));
     res.json({
       topLevelKeys: Array.from(topLevelKeys),
