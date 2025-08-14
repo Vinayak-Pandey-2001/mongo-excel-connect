@@ -284,7 +284,7 @@ app.post('/fetch', async (req, res) => {
 
     const projection = sanitizeProjection(fields || []);
     const query = buildMongoQueryFromFilters(filters || {});
-
+    console.log(query);
     const docs = await col.find(query, { projection }).toArray();
     res.json(docs);
   } catch (err) {
