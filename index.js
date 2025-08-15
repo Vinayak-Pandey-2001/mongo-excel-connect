@@ -342,7 +342,8 @@ app.post('/fetch', async (req, res) => {
 
     const projection = sanitizeProjection(fields || []);
     const query = buildMongoQueryFromFilters(filters || {});
-    console.log(query);
+    console.dir(filters, { depth: null, colors: false });
+    console.dir(query, { depth: null, colors: false });
     const docs = await col.find(query, { projection }).toArray();
     res.json(docs);
   } catch (err) {
