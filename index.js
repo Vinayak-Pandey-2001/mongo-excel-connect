@@ -128,6 +128,7 @@ function normalizePath(path) {
  * Coerces numeric/date strings into Numbers/Dates where possible.
  */
 function coerceValue(value) {
+  console.log(value, typeof value);
   if (typeof value === 'string') {
     // Trim whitespace
     const trimmed = value.trim();
