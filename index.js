@@ -17,6 +17,7 @@ async function connectDB() {
     await client.connect();
     console.log("✅ Connected to MongoDB");
 
+    app.locals.client = client;
     // mount enriched routes if present
     try {
       const enrichedRoutes = require('./routes/enriched');
