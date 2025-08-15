@@ -129,12 +129,29 @@ function normalizePath(path) {
  */
 function coerceValue(value) {
   if (typeof value === 'string') {
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) return d;
-    const n = Number(value);
-    if (!Number.isNaN(n) && value.trim() !== '') return n;
-    return value;
+    // Trim whitespace
+    const trimmed = value.trim();
+
+    // Date pattern: strict ISO 8601 (YYYY-MM-DD or full timestamp with optional ms & timezone)
+    const isoDatePattern = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?)?$/;
+
+    // Only treat as date if it matches the expected pattern
+    if (isoDatePattern.test(trimmed)) {
+      const d = new Date(trimmed);
+      if (!isNaN(d.getTime())) return d;
+    }
+
+    // Number detection (strict: must be purely numeric or decimal, no letters)
+    if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+      const n = Number(trimmed);
+      if (!Number.isNaN(n)) return n;
+    }
+
+    // Otherwise, keep as string
+    return trimmed;
   }
+
+  // Non-string values stay as is
   return value;
 }
 
