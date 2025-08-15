@@ -155,31 +155,72 @@ function coerceValue(value) {
   return value;
 }
 
+// function buildMongoQueryFromFilters(filters) {
+//   if (!filters || typeof filters !== 'object') return {};
+//   if (filters.$and && Array.isArray(filters.$and)) {
+//     return {
+//       $and: filters.$and.map(cond => {
+//         const k = Object.keys(cond)[0];
+//         const v = cond[k];
+//         if (v && typeof v === 'object') {
+//           const out = {};
+//           for (const [op, val] of Object.entries(v)) out[op] = coerceValue(val);
+//           return { [k]: out };
+//         }
+//         return { [k]: coerceValue(v) };
+//       })
+//     };
+//   }
+//   const out = {};
+//   for (const [field, ops] of Object.entries(filters)) {
+//     if (ops && typeof ops === 'object') {
+//       const o = {};
+//       for (const [op, val] of Object.entries(ops)) o[op] = coerceValue(val);
+//       if (Object.keys(o).length) out[field] = o;
+//     }
+//   }
+//   return out;
+// }
+
 function buildMongoQueryFromFilters(filters) {
   if (!filters || typeof filters !== 'object') return {};
+
+  const andArray = [];
+
+  // If the input already has $and, process each condition
   if (filters.$and && Array.isArray(filters.$and)) {
-    return {
-      $and: filters.$and.map(cond => {
-        const k = Object.keys(cond)[0];
-        const v = cond[k];
-        if (v && typeof v === 'object') {
-          const out = {};
-          for (const [op, val] of Object.entries(v)) out[op] = coerceValue(val);
-          return { [k]: out };
+    for (const cond of filters.$and) {
+      const processedCond = {};
+      for (const [field, ops] of Object.entries(cond)) {
+        if (ops && typeof ops === 'object') {
+          const processedOps = {};
+          for (const [op, val] of Object.entries(ops)) {
+            processedOps[op] = coerceValue(val);
+          }
+          processedCond[field] = processedOps;
+        } else {
+          processedCond[field] = coerceValue(ops);
         }
-        return { [k]: coerceValue(v) };
-      })
-    };
-  }
-  const out = {};
-  for (const [field, ops] of Object.entries(filters)) {
-    if (ops && typeof ops === 'object') {
-      const o = {};
-      for (const [op, val] of Object.entries(ops)) o[op] = coerceValue(val);
-      if (Object.keys(o).length) out[field] = o;
+      }
+      andArray.push(processedCond);
+    }
+  } else {
+    // No $and in input: process top-level fields into individual conditions
+    for (const [field, ops] of Object.entries(filters)) {
+      if (ops && typeof ops === 'object') {
+        const processedOps = {};
+        for (const [op, val] of Object.entries(ops)) {
+          processedOps[op] = coerceValue(val);
+        }
+        andArray.push({ [field]: processedOps });
+      } else {
+        andArray.push({ [field]: coerceValue(ops) });
+      }
     }
   }
-  return out;
+
+  // Always wrap all conditions in $and
+  return { $and: andArray };
 }
 
 // sanitize projection to avoid parent/child collisions
