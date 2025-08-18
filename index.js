@@ -222,7 +222,12 @@ function buildMongoQueryFromFilters(filters) {
   }
 
   // Always wrap all conditions in $and
-  return { $and: andArray };
+  if (andArray){
+    return { $and: andArray };
+  }
+  else {
+    return {};
+  }
 }
 
 // sanitize projection to avoid parent/child collisions
@@ -346,6 +351,7 @@ app.post('/fetch', async (req, res) => {
     const query = buildMongoQueryFromFilters(filters || {});
     console.dir(filters, { depth: null, colors: false });
     console.dir(query, { depth: null, colors: false });
+    console.dir(projection, { depth: null, colors: false });
     const docs = await col.find(query, { projection }).toArray();
     res.json(docs);
   } catch (err) {
