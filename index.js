@@ -222,7 +222,7 @@ function buildMongoQueryFromFilters(filters) {
   }
 
   // Always wrap all conditions in $and
-  if (andArray){
+  if (andArray.length!=0){
     return { $and: andArray };
   }
   else {
