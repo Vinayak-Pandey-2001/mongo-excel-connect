@@ -79,7 +79,6 @@ router.get("/api/longlist/enriched", async (req, res) => {
         pan = doc.gstn.substring(2, 12).toUpperCase();
       } else if (doc.domain_name && doc.domain_name!=" " && doc.domain_name!=null) {
         const gstnMatch = doc.domain_name.match(/[A-Z0-9]{15}/i);
-        console.log(gstnMatch);
         if (gstnMatch){
             const panMatch = gstnMatch[0].substring(2,12);
             if (panMatch) pan = panMatch.toUpperCase();
