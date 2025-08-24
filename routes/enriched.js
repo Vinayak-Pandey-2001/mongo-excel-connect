@@ -51,6 +51,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
 
     // 2️⃣ Collect unique jobIds and fetch jobIntent info
     const jobIds = [...new Set(vendorDocs.map(doc => doc.jobId))];
+    console.log("Longlist JOB IDs :",jobIds);
     const jobInfoDocs = await misDB
       .collection("job-mis-tracking")
       .find({ jobId: { $in: jobIds } })
@@ -67,6 +68,8 @@ router.get("/api/longlist/enriched", async (req, res) => {
       const jobInfo = jobInfoMap[doc.jobId];
       return jobInfo && jobInfo.jobIntent === "live";
     });
+
+    console.log("Live Jobs :",liveVendorDocs);
 
     if (!liveVendorDocs.length) return res.json([]);
 
