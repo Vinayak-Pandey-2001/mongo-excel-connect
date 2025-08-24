@@ -37,6 +37,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
       f3_published_for_Client: 1,
       f2_published_for_Client: 1,
       lowestQuoteValue: 1,
+      push_timestamp: 1
     };
 
     const vendorDocs = await vendorDB
