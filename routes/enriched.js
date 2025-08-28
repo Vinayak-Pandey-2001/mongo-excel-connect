@@ -13,7 +13,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
     // 1️⃣ Query vendorleadslonglistforjob with jobId filters
     const vendorQuery = {
       jobId: {
-        $gte: "JR-2000",
+        // $gte: "JR-2000",
         $lt: "JR-6000",
         $not: /(OJR|JR-JR)/,
       },
