@@ -31,13 +31,15 @@ router.get("/api/longlist/enriched", async (req, res) => {
       quote_v1_received_timestamp: 1,
       won_or_lost_status: 1,
     //   Quote_Received: 1,
-      quoteValueInInr: 1,
+    //  quoteValueInInr: 1,
       quote_submitted_to_client: 1,
       quote_submitted_to_client_timestamp: 1,
       f3_published_for_Client: 1,
       f2_published_for_Client: 1,
       lowestQuoteValue: 1,
-      push_timestamp: 1
+      push_timestamp: 1,
+      isL3Vendor: 1,
+      availableDocsCount: 1
     };
 
     const vendorDocs = await vendorDB
