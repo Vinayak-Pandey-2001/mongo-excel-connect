@@ -9,11 +9,12 @@ router.get("/api/longlist/enriched", async (req, res) => {
     const client = req.app.locals.client;
     const vendorDB = client.db("vendor-leads");
     const misDB = client.db("client-profile");
+    const communicationDB = client.db("communication")
 
     // 1️⃣ Query vendorleadslonglistforjob with jobId filters
     const vendorQuery = {
       jobId: {
-        $gte: "JR-2000",
+        $gte: "JR-2500",
         $lt: "JR-6000",
         $not: /(OJR|JR-JR)/,
       },
@@ -40,7 +41,8 @@ router.get("/api/longlist/enriched", async (req, res) => {
       push_timestamp: 1,
       isL3Vendor: 1,
       availableDocsCount: 1,
-      shortlist_timestamp: 1
+      shortlist_timestamp: 1,
+      addedToL3At: 1
     };
 
     const vendorDocs = await vendorDB
@@ -98,6 +100,12 @@ router.get("/api/longlist/enriched", async (req, res) => {
 
     const uniquePANs = Array.from(panSet);
 
+    const quotationDocs = await communicationDB
+      .collection("quotations")
+      .find({ jobRequestId: { $gte: "JR-2500" } })
+      .project({ jobRequestId: 1, requested_to: 1, technicalFiles: 1, commercialFiles: 1, firstSubmission: 1 })
+      .toArray();
+
     // 5️⃣ Fetch company names from centralized_vendor_pool
     const cvpDocs = await vendorDB
       .collection("centralized_vendor_pool")
@@ -109,13 +117,26 @@ router.get("/api/longlist/enriched", async (req, res) => {
     cvpDocs.forEach(doc => {
       panToCompanyMap[doc.pan] = doc.companyName;
     });
+    
+    const gstnToQuotationMap = {};
+    quotationDocs.forEach(doc => {
+      gstnToQuotationMap[doc.requested_to] = {
+        jobRequestId: doc.jobRequestId,
+        technicalFiles: doc.technicalFiles,
+        commercialFiles: doc.commercialFiles,
+        firstSubmission: doc.firstSubmission
+      };
+    });
 
     // 6️⃣ Attach companyName to enriched docs
     const finalDocs = enrichedDocs.map(doc => {
       const companyName = doc.derivedPAN ? panToCompanyMap[doc.derivedPAN] || null : null;
+      const quotationInfo = gstnToQuotationMap[doc.gstn] || null;
 
       let f3_published_details = "";
       let f2_published_details = "";
+      let vendor_document_count = "";
+      let f3_addition_and_quote_details = "";
 
       if (
         doc.f2_published_for_Client &&
@@ -157,12 +178,81 @@ router.get("/api/longlist/enriched", async (req, res) => {
 
         f3_published_details = `${companyName || "Unknown"}  -  ${formattedQuoteValue}  -  ${formattedDate}`;
       }
+      if (
+        doc.availableDocsCount &&
+        doc.availableDocsCount > 0 &&
+        doc.shortlist_status === true
+      ) {
+        const dateObj = new Date(doc.shortlist_timestamp);
+        const options = {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: "Asia/Kolkata"
+        };
+        const formattedDate = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
 
+        const docCount = doc.availableDocsCount;
+
+        vendor_document_count = `${companyName || "Unknown"}  -  ${formattedDate}  -  ${docCount}`;
+      }
+      if (
+        doc.isL3Vendor &&
+        doc.isL3Vendor === true
+      ) {
+
+        const dateObj = new Date(doc.addedToL3At);
+        const options = {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: "Asia/Kolkata"
+        };
+
+        const f3AddedAt = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
+        let firstQuoteSubmissionformattedDate = null;
+
+        if (quotationInfo.technicalFiles || quotationInfo.commercialFiles){
+          const dateObj = new Date(quotationInfo.firstSubmission.date);
+          const options = {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: "Asia/Kolkata"
+          };
+          firstQuoteSubmissionformattedDate = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
+        }
+
+        let formattedQuoteValue;
+        if (!doc.lowestQuoteValue) {
+          if (!firstQuoteSubmissionformattedDate) {
+            formattedQuoteValue = "Not yet Quoted";
+          } else {
+            formattedQuoteValue = "Data not Logged by user";
+          }
+        } else {
+          formattedQuoteValue = `INR ${doc.lowestQuoteValue}`;
+        }
+
+        f3_addition_and_quote_details = `${companyName || "Unknown"}  -  ${formattedQuoteValue}  -  ${f3AddedAt} - ${firstQuoteSubmissionformattedDate || "Not yet Quoted"}`;
+      }
+      
       return {
         ...doc,
         companyName,
         f2_published_details,
-        f3_published_details
+        f3_published_details,
+        vendor_document_count,
+        f3_addition_and_quote_details
       };
     });
 
