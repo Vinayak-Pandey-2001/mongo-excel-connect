@@ -18,6 +18,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
         $lt: "JR-6000",
         $not: /(OJR|JR-JR)/,
       },
+      is_showed: true
     };
 
     const vendorFieldsProjection = {
