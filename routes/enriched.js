@@ -218,7 +218,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
         const f3AddedAt = dateObj.toLocaleString("en-GB", options).replace(",", "").replace(" at", ",");
         let firstQuoteSubmissionformattedDate = null;
 
-        if (quotationInfo.technicalFiles || quotationInfo.commercialFiles){
+        if (quotationInfo && (quotationInfo.technicalFiles || quotationInfo.commercialFiles)){
           const dateObj = new Date(quotationInfo.firstSubmission.date);
           const options = {
             day: "2-digit",
