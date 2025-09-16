@@ -42,7 +42,8 @@ router.get("/api/longlist/enriched", async (req, res) => {
       isL3Vendor: 1,
       availableDocsCount: 1,
       shortlist_timestamp: 1,
-      addedToL3At: 1
+      addedToL3At: 1,
+      is_showed: 1
     };
 
     const vendorDocs = await vendorDB
