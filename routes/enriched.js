@@ -16,7 +16,7 @@ router.get("/api/longlist/enriched", async (req, res) => {
       jobId: {
         $gte: "JR-2500",
         $lt: "JR-6000",
-        $not: /(OJR|JR-JR)/,
+        $not: /(OJR|JR-JR)/
       }
     };
 
