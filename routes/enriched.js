@@ -180,8 +180,9 @@ router.get("/api/longlist/enriched", async (req, res) => {
         f3_published_details = `${companyName || "Unknown"}  -  ${formattedQuoteValue}  -  ${formattedDate}`;
       }
       if (
-        doc.availableDocsCount &&
-        doc.shortlist_status === true
+          doc.availableDocsCount !== undefined &&
+          doc.availableDocsCount !== null &&
+          doc.shortlist_status === true
       ) {
         const dateObj = new Date(doc.shortlist_timestamp);
         const options = {
