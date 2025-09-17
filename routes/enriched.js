@@ -181,7 +181,6 @@ router.get("/api/longlist/enriched", async (req, res) => {
       }
       if (
         doc.availableDocsCount &&
-        doc.availableDocsCount >= 0 &&
         doc.shortlist_status === true
       ) {
         const dateObj = new Date(doc.shortlist_timestamp);
