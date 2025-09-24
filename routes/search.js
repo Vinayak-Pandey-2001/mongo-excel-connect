@@ -10,9 +10,7 @@ const es = new Client({
   auth: {
     apiKey: "TnBHbGpaQUJ5ZFdaWkVrcXM1SVg6MmlaUG94d2lUdVMtU2NlQVlBdThHdw=="
   },
-  requestTimeout: 120000,
-  headers: {},          // leave empty — do NOT manually add Accept
-  apiVersion: "8.10.0"  // force v8 API; ES 9 cluster accepts this
+  requestTimeout: 120000
 });
 
 // Your index
