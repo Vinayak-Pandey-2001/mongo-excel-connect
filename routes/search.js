@@ -4,13 +4,17 @@ const { Client } = require("@elastic/elasticsearch");
 
 const router = express.Router();
 
-// ES client
+// ES client — force headers compatible with v8 API
 const es = new Client({
   node: "https://0620dabd16044863be94de92adb946bd.ap-south-1.aws.elastic-cloud.com:443",
   auth: {
     apiKey: "TnBHbGpaQUJ5ZFdaWkVrcXM1SVg6MmlaUG94d2lUdVMtU2NlQVlBdThHdw=="
   },
-  requestTimeout: 120000 // ms (Python uses seconds → multiply by 1000)
+  requestTimeout: 120000,
+  headers: {
+    "Accept": "application/vnd.elasticsearch+json; compatible-with=8",
+    "Content-Type": "application/vnd.elasticsearch+json; compatible-with=8"
+  }
 });
 
 // Your index
@@ -25,39 +29,16 @@ router.post("/", async (req, res) => {
       size: numberInput1,
       sort: [{ _score: { order: "desc" } }],
       _source: [
-        "gstn",
-        "isActive",
-        "companyName",
-        "serviceDescription",
-        "turnOverSlab",
-        "products",
-        "keyEquipments",
-        "aboutUs",
-        "discipline",
-        "info_content",
-        "experiences.description",
-        "experiences.clientIndustry",
-        "experiences.clientCompanyName",
-        "im_about_us",
-        "im_product_svc.description",
-        "emails",
-        "contactNumbers",
-        "email",
-        "phoneNumber",
-        "website",
-        "registeredStates",
-        "locationServedStates",
-        "industriesServed",
-        "turnoverSlabFY",
-        "registeredCities",
-        "shortlistedInJobs_text",
-        "breadth.registeredStates",
-        "breadth.turnOverSlab",
-        "im_url",
-        "im_company_title",
-        "breadth.companyName",
-        "breadth.emails",
-        "breadth.phoneNumbers"
+        "gstn", "isActive", "companyName", "serviceDescription", "turnOverSlab",
+        "products", "keyEquipments", "aboutUs", "discipline", "info_content",
+        "experiences.description", "experiences.clientIndustry",
+        "experiences.clientCompanyName", "im_about_us",
+        "im_product_svc.description", "emails", "contactNumbers",
+        "email", "phoneNumber", "website", "registeredStates",
+        "locationServedStates", "industriesServed", "turnoverSlabFY",
+        "registeredCities", "shortlistedInJobs_text", "breadth.registeredStates",
+        "breadth.turnOverSlab", "im_url", "im_company_title", "breadth.companyName",
+        "breadth.emails", "breadth.phoneNumbers"
       ],
       track_scores: true,
       query: {
@@ -181,11 +162,7 @@ router.post("/", async (req, res) => {
       }
     };
 
-    const response = await es.search({
-      index: ES_INDEX,
-      body: query
-    });
-
+    const response = await es.search({ index: ES_INDEX, body: query });
     res.json(response.hits);
   } catch (err) {
     console.error(err);
