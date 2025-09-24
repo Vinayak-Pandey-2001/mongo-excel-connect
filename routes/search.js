@@ -1,6 +1,6 @@
 // routes/search.js
-import express from "express";
-import { Client } from "@elastic/elasticsearch";
+const express = require("express");
+const { Client } = require("@elastic/elasticsearch");
 
 const router = express.Router();
 
