@@ -16,7 +16,7 @@ try {
 }
 
 // ---- DB setup (unchanged) ----
-const uri = 'mongodb+srv://venwiz-mvp:j2IgHVjt6lyq0SId@cluster1.vs2kj.mongodb.net/vendor-profile?retryWrites=true&w=majority';
+const uri = <MONGODB_URI>;
 const client = new MongoClient(uri);
 
 // Connect and then start server (single listen)
