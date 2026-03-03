@@ -6,9 +6,9 @@ const router = express.Router();
 
 // ES client — use v8 client, compatible with ES 9 cluster
 const es = new Client({
-  node: "https://0620dabd16044863be94de92adb946bd.ap-south-1.aws.elastic-cloud.com:443",
+  node: <ELASTIC_SEARCH_ENDPOINT>,
   auth: {
-    apiKey: "TnBHbGpaQUJ5ZFdaWkVrcXM1SVg6MmlaUG94d2lUdVMtU2NlQVlBdThHdw=="
+    apiKey: <ES_API_KEY>
   },
   requestTimeout: 120000 // ms
 });
